@@ -1,0 +1,12 @@
+docker run -d \
+  -it \
+  --name devtest \
+  --mount type=bind,source="$(pwd)"/target,target=/app,readonly \
+  nginx:latest
+
+
+docker run -d \
+  -it \
+  --name devtest \
+  -v "$(pwd)"/target:/app:ro \
+  nginx:latest
