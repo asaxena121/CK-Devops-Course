@@ -1,0 +1,89 @@
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'IMAGE_NAME', defaultValue: 'my-calculator', description: 'Name of the Docker image')
+        string(name: 'IMAGE_TAG', defaultValue: 'latest', description: 'Tag for the Docker image')
+        string(name: 'GIT_BRANCH', defaultValue: 'main', description: 'Git branch to build from')
+    }
+
+    environment {
+        IMAGE_NAME = "${params.IMAGE_NAME}"
+        IMAGE_TAG = "${params.IMAGE_TAG}"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: "${params.GIT_BRANCH}", url: 'https://github.com/YOUR_GITHUB/calculator.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'pip install -r requirements.txt'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh 'python -m unittest discover -s . -p "test_*.py"'
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
+            }
+        }
+
+        stage('Docker Run & Validate') {
+            steps {
+                script {
+                    sh '''
+                        docker run -d --name test_container $IMAGE_NAME:$IMAGE_TAG
+                        sleep 5  # Give time to start
+                        curl -f http://localhost:5000/health || exit 1
+                        docker stop test_container
+                        docker rm test_container
+                    '''
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    if (params.GIT_BRANCH.toLowerCase() == 'main') {
+                        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                            sh '''
+                                echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                                docker tag $IMAGE_NAME:$IMAGE_TAG $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
+                                docker push $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
+                            '''
+                        }
+                    } else {
+                        echo "Skipping Docker push because GIT_BRANCH is not 'main'"
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Cleaning up...'
+            sh 'docker rmi $IMAGE_NAME:$IMAGE_TAG || true'
+        }
+        success {
+        mail to: 'your-team@example.com',
+             subject: "Build Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+             body: "The Jenkins build was successful. Check: ${env.BUILD_URL}"
+        }
+        failure {
+            mail to: 'your-team@example.com',
+                subject: "Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: "The Jenkins build failed. Check: ${env.BUILD_URL}"
+        }
+    }
+}
