@@ -36,7 +36,7 @@ pipeline {
                 sh '''
                     . venv/bin/activate
                     cd CI-CD/calc-web
-                    python3 -m unittest discover -s . -p "test_*.py"'
+                    python3 -m unittest discover -s . -p "test_*.py"
                 '''
             }
         }
