@@ -34,7 +34,8 @@ pipeline {
         stage('Run Tests') {
             steps {
                 sh '''
-                    source venv/bin/activate
+                    . venv/bin/activate
+                    cd CI-CD/calc-web
                     python3 -m unittest discover -s . -p "test_*.py"'
                 '''
             }
@@ -42,7 +43,10 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
+                sh '''
+                cd CI-CD/calc-web
+                docker build -t $IMAGE_NAME:$IMAGE_TAG .
+                '''
             }
         }
 
