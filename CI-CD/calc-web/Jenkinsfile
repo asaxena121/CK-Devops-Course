@@ -16,7 +16,6 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: "${params.GIT_BRANCH}", url: 'https://github.com/theBansal/CK-Devops-Course.git'
-                sh 'cd CI-CD/calc-web'
             }
         }
 
@@ -26,6 +25,7 @@ pipeline {
                 sh ''' 
                     python3 -m venv venv
                     . venv/bin/activate
+                    cd CI-CD/calc-web
                     pip install -r requirements.txt
                 '''
             }
