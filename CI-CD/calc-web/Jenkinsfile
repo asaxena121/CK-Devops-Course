@@ -15,7 +15,8 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: "${params.GIT_BRANCH}", url: 'https://github.com/YOUR_GITHUB/calculator.git'
+                git branch: "${params.GIT_BRANCH}", url: 'https://github.com/theBansal/CK-Devops-Course.git'
+                sh 'cd CI-CD/calc-web'
             }
         }
 
@@ -27,7 +28,7 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                sh 'python -m unittest discover -s . -p "test_*.py"'
+                sh 'python3 -m unittest discover -s . -p "test_*.py"'
             }
         }
 
@@ -75,15 +76,15 @@ pipeline {
             echo 'Cleaning up...'
             sh 'docker rmi $IMAGE_NAME:$IMAGE_TAG || true'
         }
-        success {
-        mail to: 'your-team@example.com',
-             subject: "Build Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-             body: "The Jenkins build was successful. Check: ${env.BUILD_URL}"
-        }
-        failure {
-            mail to: 'your-team@example.com',
-                subject: "Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: "The Jenkins build failed. Check: ${env.BUILD_URL}"
-        }
+        // success {
+        // mail to: 'byashbansal46@gmail.com',
+        //      subject: "Build Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+        //      body: "The Jenkins build was successful. Check: ${env.BUILD_URL}"
+        // }
+        // failure {
+        //     mail to: 'byashbansal46@gmail.com',
+        //         subject: "Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+        //         body: "The Jenkins build failed. Check: ${env.BUILD_URL}"
+        // }
     }
 }

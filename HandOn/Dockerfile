@@ -25,6 +25,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD curl --fail http://localhost:$APP_PORT/health || exit 1
 
 RUN pip install --no-cache-dir -r requirements.txt
+RUN apt update && apt install -y curl
 
 USER root
 
@@ -32,3 +33,9 @@ ONBUILD COPY . /src
 
 ENTRYPOINT ["python"]
 CMD ["app/server.py"]
+
+
+
+
+
+

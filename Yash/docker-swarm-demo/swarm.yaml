@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  web:
+    image: nginx
+    ports:
+      - "8080:80"
+    networks:
+      - my_overlay
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: on-failure
+      update_config:
+        parallelism: 2
+        delay: 10s
+networks:
+  my_overlay:
+    external: true

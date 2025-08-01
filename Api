@@ -1,0 +1,23 @@
+Api
+/api Request--> Response
+
+/update --> Update by Yash
+Webhooks --> Updated by Yash 
+
+
+WebSocket is a computer communications protocol, providing a simultaneous two-way communication channel over a single Transmission Control Protocol connection
+
+Chat app
+Login -- client connect to websocket client
+hello Yash   --> Websocket Server  --> Broadcast Websocket
+
+hello hardik --> 
+
+
+Video Application
+
+
+Github --> Push, Merge, Commit
+
+Jenkins webhook url -- config with github
+
