@@ -59,8 +59,6 @@ pipeline {
                         docker run -d --name test_container -p 5000:5000 $IMAGE_NAME:$IMAGE_TAG
                         sleep 5  # Give time to start
                         curl -f http://localhost:5000/health || exit 1
-                        docker stop test_container
-                        docker rm test_container
                     '''
                 }
             }
@@ -88,6 +86,8 @@ pipeline {
     post {
         always {
             echo 'Cleaning up...'
+            sh 'docker stop test_container || true'
+            sh 'docker rm test_container || true'
             sh 'docker rmi $IMAGE_NAME:$IMAGE_TAG || true'
         }
         // success {
