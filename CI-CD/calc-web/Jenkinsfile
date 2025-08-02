@@ -56,7 +56,7 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        docker run -d --name test_container $IMAGE_NAME:$IMAGE_TAG
+                        docker run -d --name test_container -p 5000:5000 $IMAGE_NAME:$IMAGE_TAG
                         sleep 5  # Give time to start
                         curl -f http://localhost:5000/health || exit 1
                         docker stop test_container
