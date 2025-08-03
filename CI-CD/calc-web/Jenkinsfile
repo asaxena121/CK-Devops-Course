@@ -1,3 +1,4 @@
+@Library('share-lib-docker') _
 pipeline {
     agent any
 
@@ -66,13 +67,15 @@ pipeline {
             steps {
                 script {
                     if (params.GIT_BRANCH.toLowerCase() == 'main') {
-                        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                            sh '''
-                                echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                                docker tag $IMAGE_NAME:$IMAGE_TAG $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
-                                docker push $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
-                            '''
-                        }
+                        // withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        //     sh '''
+                        //         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        //         docker tag $IMAGE_NAME:$IMAGE_TAG $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
+                        //         docker push $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
+                        //     '''
+                        // }
+                        pushToDocker(image: "${IMAGE_NAME}", tag: "${IMAGE_TAG}", credentialsId: 'dockerhub-creds')
+                        echo "Docker image pushed successfully."
                     } else {
                         echo "Skipping Docker push because GIT_BRANCH is not 'main'"
                     }
