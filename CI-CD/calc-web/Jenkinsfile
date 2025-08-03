@@ -121,7 +121,9 @@ pipeline {
     stages {
         stage('BuildAndTest') {
             matrix {
-                agent any
+                agent {
+                    label "${PLATFORM}-agent"
+                }
                 axes {
                     axis {
                         name 'PLATFORM'
