@@ -12,7 +12,6 @@ pipeline {
                 values 'my-calculator', 'my-calculator-advanced'
             }
         }
-    }
     parameters {
         string(name: 'IMAGE_NAME', defaultValue: 'my-calculator', description: 'Name of the Docker image')
         string(name: 'IMAGE_TAG', defaultValue: 'latest', description: 'Tag for the Docker image')
@@ -112,5 +111,6 @@ pipeline {
         //         subject: "Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
         //         body: "The Jenkins build failed. Check: ${env.BUILD_URL}"
         // }
+    }
     }
 }
