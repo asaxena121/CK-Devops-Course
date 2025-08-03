@@ -1,7 +1,18 @@
 @Library('shared-lib-docker') _
 pipeline {
     agent any
-
+    matrix {
+        axes {
+            axis {
+                name 'PLATFORM'
+                values 'linux', 'windows'
+            }
+            axis {
+                name 'ImageName'
+                values 'my-calculator', 'my-calculator-advanced'
+            }
+        }
+    }
     parameters {
         string(name: 'IMAGE_NAME', defaultValue: 'my-calculator', description: 'Name of the Docker image')
         string(name: 'IMAGE_TAG', defaultValue: 'latest', description: 'Tag for the Docker image')
@@ -74,7 +85,7 @@ pipeline {
                         //         docker push $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
                         //     '''
                         // }
-                        pushToDocker(image: "${IMAGE_NAME}", tag: "${IMAGE_TAG}", credentialsId: 'dockerhub-creds')
+                        pushToDocker(image: "${ImageName}", tag: "${PLATFORM}-${IMAGE_TAG}", credentialsId: 'dockerhub-creds')
                         echo "Docker image pushed successfully."
                     } else {
                         echo "Skipping Docker push because GIT_BRANCH is not 'main'"
