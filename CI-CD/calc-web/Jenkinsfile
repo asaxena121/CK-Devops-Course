@@ -1,27 +1,28 @@
 @Library('shared-lib-docker') _
 pipeline {
     agent any
+
     matrix {
         axes {
             axis {
-                name 'PLATFORM'
-                values 'linux', 'windows'
+                name 'OS'
+                values 'ubuntu', 'centos'
             }
             axis {
-                name 'ImageName'
-                values 'my-calculator', 'my-calculator-advanced'
+                name 'JAVA_VERSION'
+                values '8', '11'
             }
         }
-    parameters {
-        string(name: 'IMAGE_NAME', defaultValue: 'my-calculator', description: 'Name of the Docker image')
-        string(name: 'IMAGE_TAG', defaultValue: 'latest', description: 'Tag for the Docker image')
-        string(name: 'GIT_BRANCH', defaultValue: 'main', description: 'Git branch to build from')
-    }
+    // parameters {
+    //     string(name: 'IMAGE_NAME', defaultValue: 'my-calculator', description: 'Name of the Docker image')
+    //     string(name: 'IMAGE_TAG', defaultValue: 'latest', description: 'Tag for the Docker image')
+    //     string(name: 'GIT_BRANCH', defaultValue: 'main', description: 'Git branch to build from')
+    // }
 
-    environment {
-        IMAGE_NAME = "${params.IMAGE_NAME}"
-        IMAGE_TAG = "${params.IMAGE_TAG}"
-    }
+    // environment {
+    //     IMAGE_NAME = "${params.IMAGE_NAME}"
+    //     IMAGE_TAG = "${params.IMAGE_TAG}"
+    // }
 
     stages {
         stage('Checkout') {
