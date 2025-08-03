@@ -1,4 +1,4 @@
-@Library('share-lib-docker') _
+@Library('shared-lib-docker') _
 pipeline {
     agent any
 
