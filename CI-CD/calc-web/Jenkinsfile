@@ -1,117 +1,150 @@
-@Library('shared-lib-docker') _
-pipeline {
-    agent any
+// @Library('shared-lib-docker') _
+// pipeline {
+//     agent any
 
-    matrix {
-        axes {
-            axis {
-                name 'OS'
-                values 'ubuntu', 'centos'
-            }
-            axis {
-                name 'JAVA_VERSION'
-                values '8', '11'
-            }
-        }
-    // parameters {
-    //     string(name: 'IMAGE_NAME', defaultValue: 'my-calculator', description: 'Name of the Docker image')
-    //     string(name: 'IMAGE_TAG', defaultValue: 'latest', description: 'Tag for the Docker image')
-    //     string(name: 'GIT_BRANCH', defaultValue: 'main', description: 'Git branch to build from')
-    // }
+//     matrix {
+//         axes {
+//             axis {
+//                 name 'OS'
+//                 values 'ubuntu', 'centos'
+//             }
+//             axis {
+//                 name 'JAVA_VERSION'
+//                 values '8', '11'
+//             }
+//         }
+//     // parameters {
+//     //     string(name: 'IMAGE_NAME', defaultValue: 'my-calculator', description: 'Name of the Docker image')
+//     //     string(name: 'IMAGE_TAG', defaultValue: 'latest', description: 'Tag for the Docker image')
+//     //     string(name: 'GIT_BRANCH', defaultValue: 'main', description: 'Git branch to build from')
+//     // }
 
-    // environment {
-    //     IMAGE_NAME = "${params.IMAGE_NAME}"
-    //     IMAGE_TAG = "${params.IMAGE_TAG}"
-    // }
+//     // environment {
+//     //     IMAGE_NAME = "${params.IMAGE_NAME}"
+//     //     IMAGE_TAG = "${params.IMAGE_TAG}"
+//     // }
 
-    stages {
-        stage('Checkout') {
-            steps {
-                git branch: "${params.GIT_BRANCH}", url: 'https://github.com/theBansal/CK-Devops-Course.git'
-            }
-        }
+//     stages {
+//         stage('Checkout') {
+//             steps {
+//                 git branch: "${params.GIT_BRANCH}", url: 'https://github.com/theBansal/CK-Devops-Course.git'
+//             }
+//         }
 
-        stage('Install Dependencies') {
-            steps {
+//         stage('Install Dependencies') {
+//             steps {
                 
-                sh ''' 
-                    python3 -m venv venv
-                    . venv/bin/activate
-                    cd CI-CD/calc-web
-                    pip install -r requirements.txt
-                '''
-            }
-        }
+//                 sh ''' 
+//                     python3 -m venv venv
+//                     . venv/bin/activate
+//                     cd CI-CD/calc-web
+//                     pip install -r requirements.txt
+//                 '''
+//             }
+//         }
 
-        stage('Run Tests') {
-            steps {
-                sh '''
-                    . venv/bin/activate
-                    cd CI-CD/calc-web
-                    python3 -m unittest discover -s . -p "test_*.py"
-                '''
-            }
-        }
+//         stage('Run Tests') {
+//             steps {
+//                 sh '''
+//                     . venv/bin/activate
+//                     cd CI-CD/calc-web
+//                     python3 -m unittest discover -s . -p "test_*.py"
+//                 '''
+//             }
+//         }
 
-        stage('Docker Build') {
-            steps {
-                sh '''
-                cd CI-CD/calc-web
-                docker build -t $IMAGE_NAME:$IMAGE_TAG .
-                '''
-            }
-        }
+//         stage('Docker Build') {
+//             steps {
+//                 sh '''
+//                 cd CI-CD/calc-web
+//                 docker build -t $IMAGE_NAME:$IMAGE_TAG .
+//                 '''
+//             }
+//         }
 
-        stage('Docker Run & Validate') {
-            steps {
-                script {
-                    sh '''
-                        docker run -d --name test_container -p 5000:5000 $IMAGE_NAME:$IMAGE_TAG
-                        sleep 5  # Give time to start
-                        curl -f http://localhost:5000/health || exit 1
-                    '''
+//         stage('Docker Run & Validate') {
+//             steps {
+//                 script {
+//                     sh '''
+//                         docker run -d --name test_container -p 5000:5000 $IMAGE_NAME:$IMAGE_TAG
+//                         sleep 5  # Give time to start
+//                         curl -f http://localhost:5000/health || exit 1
+//                     '''
+//                 }
+//             }
+//         }
+
+//         stage('Push to Docker Hub') {
+//             steps {
+//                 script {
+//                     if (params.GIT_BRANCH.toLowerCase() == 'main') {
+//                         // withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+//                         //     sh '''
+//                         //         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+//                         //         docker tag $IMAGE_NAME:$IMAGE_TAG $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
+//                         //         docker push $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
+//                         //     '''
+//                         // }
+//                         pushToDocker(image: "${ImageName}", tag: "${PLATFORM}-${IMAGE_TAG}", credentialsId: 'dockerhub-creds')
+//                         echo "Docker image pushed successfully."
+//                     } else {
+//                         echo "Skipping Docker push because GIT_BRANCH is not 'main'"
+//                     }
+//                 }
+//             }
+//         }
+//     }
+
+//     post {
+//         always {
+//             echo 'Cleaning up...'
+//             sh 'docker stop test_container || true'
+//             sh 'docker rm test_container || true'
+//             sh 'docker rmi $IMAGE_NAME:$IMAGE_TAG || true'
+//         }
+//         // success {
+//         // mail to: 'byashbansal46@gmail.com',
+//         //      subject: "Build Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+//         //      body: "The Jenkins build was successful. Check: ${env.BUILD_URL}"
+//         // }
+//         // failure {
+//         //     mail to: 'byashbansal46@gmail.com',
+//         //         subject: "Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+//         //         body: "The Jenkins build failed. Check: ${env.BUILD_URL}"
+//         // }
+//     }
+//     }
+// }
+
+pipeline {
+    agent none
+    stages {
+        stage('BuildAndTest') {
+            matrix {
+                agent any
+                axes {
+                    axis {
+                        name 'PLATFORM'
+                        values 'linux', 'windows', 'mac'
+                    }
+                    axis {
+                        name 'BROWSER'
+                        values 'firefox', 'chrome', 'safari', 'edge'
+                    }
                 }
-            }
-        }
-
-        stage('Push to Docker Hub') {
-            steps {
-                script {
-                    if (params.GIT_BRANCH.toLowerCase() == 'main') {
-                        // withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        //     sh '''
-                        //         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        //         docker tag $IMAGE_NAME:$IMAGE_TAG $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
-                        //         docker push $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
-                        //     '''
-                        // }
-                        pushToDocker(image: "${ImageName}", tag: "${PLATFORM}-${IMAGE_TAG}", credentialsId: 'dockerhub-creds')
-                        echo "Docker image pushed successfully."
-                    } else {
-                        echo "Skipping Docker push because GIT_BRANCH is not 'main'"
+                stages {
+                    stage('Build') {
+                        steps {
+                            echo "Do Build for ${PLATFORM} - ${BROWSER}"
+                        }
+                    }
+                    stage('Test') {
+                        steps {
+                            echo "Do Test for ${PLATFORM} - ${BROWSER}"
+                        }
                     }
                 }
             }
         }
-    }
-
-    post {
-        always {
-            echo 'Cleaning up...'
-            sh 'docker stop test_container || true'
-            sh 'docker rm test_container || true'
-            sh 'docker rmi $IMAGE_NAME:$IMAGE_TAG || true'
-        }
-        // success {
-        // mail to: 'byashbansal46@gmail.com',
-        //      subject: "Build Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-        //      body: "The Jenkins build was successful. Check: ${env.BUILD_URL}"
-        // }
-        // failure {
-        //     mail to: 'byashbansal46@gmail.com',
-        //         subject: "Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-        //         body: "The Jenkins build failed. Check: ${env.BUILD_URL}"
-        // }
-    }
     }
 }
