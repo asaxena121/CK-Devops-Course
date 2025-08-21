@@ -1,0 +1,7 @@
+# Namespace for the demo
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: k8s-services-demo
+  labels:
+    name: k8s-services-demo

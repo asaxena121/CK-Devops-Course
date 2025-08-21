@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - BACKEND_SERVICE_URL=http://backend:5000
+      - DATABASE_SERVICE_URL=http://database:5432
+    depends_on:
+      - backend
+      - database
+    networks:
+      - demo-network
+
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    environment:
+      - POD_IP=backend
+      - NODE_NAME=docker-compose
+      - NAMESPACE=local
+    networks:
+      - demo-network
+
+  database:
+    build: ./database
+    ports:
+      - "5432:5432"
+    environment:
+      - POD_IP=database
+      - HOSTNAME=database
+    networks:
+      - demo-network
+
+networks:
+  demo-network:
+    driver: bridge
+
+# For local testing without Kubernetes
+# Run: docker-compose up --build

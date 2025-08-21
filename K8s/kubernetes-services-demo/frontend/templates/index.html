@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Services Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .service-type {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .service-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .result {
+            background: #e8f5e8;
+            border: 1px solid #c3e6c3;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .error {
+            background: #ffe8e8;
+            border: 1px solid #ffcdd2;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Kubernetes Services Demonstration</h1>
+        <p>This demo showcases all types of Kubernetes services and how they enable service discovery and communication.</p>
+    </div>
+
+    <div class="container">
+        <div class="service-type">
+            <h2>📋 Service Types Overview</h2>
+        </div>
+        
+        <div class="service-card">
+            <h3>🔒 ClusterIP Service</h3>
+            <p><strong>Backend Service:</strong> Internal communication between frontend and backend</p>
+            <p>Default service type, only accessible within the cluster</p>
+        </div>
+
+        <div class="service-card">
+            <h3>🌐 NodePort Service</h3>
+            <p><strong>Frontend Service:</strong> Exposes application on each node's IP at a static port</p>
+            <p>Accessible from outside the cluster via NodeIP:NodePort</p>
+        </div>
+
+        <div class="service-card">
+            <h3>⚖️ LoadBalancer Service</h3>
+            <p><strong>Frontend LoadBalancer:</strong> Cloud provider's load balancer</p>
+            <p>Provides external IP for production access</p>
+        </div>
+
+        <div class="service-card">
+            <h3>🔗 ExternalName Service</h3>
+            <p><strong>External API Service:</strong> Maps to external services via DNS</p>
+            <p>Returns CNAME record pointing to external service</p>
+        </div>
+
+        <div class="service-card">
+            <h3>👥 Headless Service</h3>
+            <p><strong>Database Service:</strong> Direct pod-to-pod communication</p>
+            <p>No cluster IP, returns pod IPs directly</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="service-type">
+            <h2>🧪 Live Service Testing</h2>
+        </div>
+        
+        <button onclick="testFrontendHealth()">Test Frontend Health</button>
+        <button onclick="testBackendCommunication()">Test Backend Communication (ClusterIP)</button>
+        <button onclick="testServiceDiscovery()">Test Service Discovery</button>
+        <button onclick="loadBackendData()">Load Backend Data</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <div class="container">
+        <div class="service-type">
+            <h2>📊 Real-time Service Information</h2>
+        </div>
+        <div id="service-info">
+            <p>Click "Test Service Discovery" to see live service communication</p>
+        </div>
+    </div>
+
+    <script>
+        function displayResult(title, data, isError = false) {
+            const results = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = isError ? 'result error' : 'result';
+            resultDiv.innerHTML = `
+                <h4>${title}</h4>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+            results.insertBefore(resultDiv, results.firstChild);
+        }
+
+        async function testFrontendHealth() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                displayResult('✅ Frontend Health Check', data);
+            } catch (error) {
+                displayResult('❌ Frontend Health Check Failed', { error: error.message }, true);
+            }
+        }
+
+        async function testBackendCommunication() {
+            try {
+                const response = await fetch('/api/backend-data');
+                const data = await response.json();
+                displayResult('🔄 Backend Communication (ClusterIP Service)', data, !response.ok);
+            } catch (error) {
+                displayResult('❌ Backend Communication Failed', { error: error.message }, true);
+            }
+        }
+
+        async function testServiceDiscovery() {
+            try {
+                const response = await fetch('/api/service-discovery');
+                const data = await response.json();
+                displayResult('🔍 Service Discovery Test', data);
+                
+                // Update service info section
+                const serviceInfo = document.getElementById('service-info');
+                serviceInfo.innerHTML = `
+                    <h4>Current Service Status:</h4>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                displayResult('❌ Service Discovery Failed', { error: error.message }, true);
+            }
+        }
+
+        async function loadBackendData() {
+            try {
+                const response = await fetch('/api/backend-data');
+                const data = await response.json();
+                displayResult('📥 Backend Data Loaded', data, !response.ok);
+            } catch (error) {
+                displayResult('❌ Failed to Load Backend Data', { error: error.message }, true);
+            }
+        }
+
+        // Auto-refresh service info every 30 seconds
+        setInterval(() => {
+            testServiceDiscovery();
+        }, 30000);
+
+        // Initial load
+        testFrontendHealth();
+    </script>
+</body>
+</html>
